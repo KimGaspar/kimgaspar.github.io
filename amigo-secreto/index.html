@@ -53,11 +53,10 @@
   .stack>*+*{margin-top:12px}
 
   label.lbl{display:block;font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:16px 0 8px}
-  textarea,input.field{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font-size:15.5px;
+  textarea{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font-size:15.5px;
     outline:none;background:#fff;color:var(--ink);font-family:inherit}
   textarea{min-height:230px;resize:vertical;line-height:1.55}
-  textarea:focus,input.field:focus{border-color:var(--gold)}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  textarea:focus{border-color:var(--gold)}
   .count{font-size:13.5px;color:var(--muted);margin-top:8px}
   .count b{color:var(--ink)}
   .err{color:var(--red);font-size:14px;margin:10px 0 2px;min-height:18px;font-weight:600;text-align:center}
@@ -92,9 +91,7 @@
   @keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
   .result .label{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);font-weight:800}
   .result .friend{font-size:40px;font-weight:700;color:var(--red);margin:8px 0 6px;line-height:1.1;word-break:break-word}
-  .result .shh{color:var(--muted);font-size:14px;margin-bottom:14px}
-  .details{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:22px}
-  .pill{background:#fbf3e3;color:#6b5434;border-radius:99px;padding:7px 12px;font-size:13.5px;font-weight:600}
+  .result .shh{color:var(--muted);font-size:14px;margin-bottom:22px}
 
   .modal{position:fixed;inset:0;background:rgba(5,15,10,.6);backdrop-filter:blur(4px);z-index:20;display:none;align-items:center;justify-content:center;padding:20px}
   .modal.show{display:flex}
@@ -102,16 +99,25 @@
   .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#1d1410;color:#fff;
     padding:12px 18px;border-radius:12px;font-size:14px;opacity:0;transition:all .25s;z-index:30;pointer-events:none;text-align:center;max-width:90vw}
   .toast.show{opacity:1;transform:translateX(-50%)}
+  .btn-org{margin-top:22px;background:rgba(255,248,236,.1);color:var(--cream);border:1.5px solid rgba(232,189,98,.55);backdrop-filter:blur(4px)}
+  .btn-org:hover{background:rgba(255,248,236,.16)}
+  .org-hint{text-align:center;color:rgba(255,248,236,.55);font-size:13px;margin-top:8px}
   .linkbtn{background:none;border:0;color:var(--cream);opacity:.75;font-size:14.5px;cursor:pointer;font-family:inherit;display:block;margin:8px auto 0;padding:6px}
   .confetti{position:fixed;top:-12px;width:9px;height:14px;z-index:15;pointer-events:none;animation:conf linear forwards}
   @keyframes conf{to{transform:translate3d(var(--dx),105vh,0) rotate(var(--r))}}
   .center{text-align:center}
   .big-emoji{font-size:54px;text-align:center;margin:4px 0 10px}
+  .music{position:fixed;top:14px;right:14px;z-index:12;width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;
+    background:rgba(255,248,236,.14);color:#fff;font-size:21px;backdrop-filter:blur(6px);box-shadow:0 6px 16px rgba(0,0,0,.25);transition:transform .15s}
+  .music:active{transform:scale(.9)}
+  .music.on{animation:beat 1s ease-in-out infinite}
+  @keyframes beat{50%{transform:scale(1.08)}}
   footer{text-align:center;color:rgba(255,248,236,.45);font-size:12.5px;margin-top:26px}
 </style>
 </head>
 <body>
 <div class="snow" id="snow"></div>
+<button class="music" id="musicBtn" aria-label="Ligar ou desligar a música" onclick="event.stopPropagation(); toggleMusic()">🔇</button>
 
 <div class="wrap">
   <header>
@@ -130,6 +136,8 @@
     <div class="card" style="padding:16px 18px">
       <p class="sub" style="margin:0">🤫 Cada link mostra o resultado só de uma pessoa. Não encaminhe o seu e não mande print no grupo!</p>
     </div>
+    <button class="btn btn-org" onclick="location.hash='organizar'">🎄 Sou o organizador</button>
+    <p class="org-hint">Monte a lista de participantes e envie os links</p>
   </section>
 
   <!-- ORGANIZADOR: configuração -->
@@ -140,10 +148,6 @@
         <p class="sub">Escreva um nome por linha (ou cole uma lista). Ninguém vai tirar a si mesmo.</p>
         <textarea id="namesInput" placeholder="Adriana&#10;Bosco&#10;Diego&#10;..." spellcheck="false"></textarea>
         <div class="count" id="namesCount"></div>
-        <div class="grid2">
-          <div><label class="lbl" for="dateInput">Data da troca</label><input class="field" type="date" id="dateInput"></div>
-          <div><label class="lbl" for="valueInput">Valor</label><input class="field" id="valueInput" placeholder="Ex.: R$ 50" maxlength="30"></div>
-        </div>
         <div class="err" id="orgErr"></div>
         <div class="note" id="fileWarn" style="display:none;margin-top:8px">⚠️ Você abriu o arquivo direto do computador. Os links só funcionam se este painel for aberto pelo endereço do site (GitHub).</div>
         <button class="btn btn-gold" style="margin-top:6px" onclick="tryDraw()">✨ Fazer o sorteio</button>
@@ -161,7 +165,7 @@
         <button class="btn btn-ghost" style="margin-top:16px" onclick="confirmNewDraw()">↻ Novo sorteio</button>
       </div>
     </div>
-    <button class="linkbtn" onclick="leaveOrg()">Sair do painel</button>
+    <button class="linkbtn" onclick="leaveOrg()">‹ Voltar para o início</button>
   </section>
 
   <!-- RESULTADO -->
@@ -178,7 +182,6 @@
         <div class="label">Seu amigo secreto é</div>
         <div class="friend serif" id="rFriend"></div>
         <div class="shh">🤫 Guarde segredo!</div>
-        <div class="details" id="rDetails"></div>
       </div>
       <button class="btn btn-red" onclick="hideResult()">Esconder</button>
     </div>
@@ -248,10 +251,9 @@ function modal({emoji="🤔",title,text,ok="Sim",onOk}){
   $("modal").classList.add("show");
 }
 function closeModal(){ $("modal").classList.remove("show"); }
-function fmtDate(d){ if(!d) return ""; const [y,m,dd]=d.split("-"); return `${dd}/${m}/${y}`; }
 
 /* ========= organizador ========= */
-let org = { text:"", date:"", value:"", names:null, links:null, sent:[] };
+let org = { text:"", names:null, links:null, sent:[] };
 try{ Object.assign(org, JSON.parse(localStorage.getItem("as_org2")||"{}")); }catch(e){}
 function saveOrg(){ try{ localStorage.setItem("as_org2", JSON.stringify(org)); }catch(e){} }
 
@@ -261,10 +263,7 @@ function updateCount(){
   $("namesCount").innerHTML = list.length ? `<b>${list.length}</b> participante${list.length>1?"s":""}` : "Nenhum nome ainda";
   $("orgErr").textContent="";
 }
-["namesInput","dateInput","valueInput"].forEach(id=>$(id).addEventListener("input",()=>{
-  org.text=$("namesInput").value; org.date=$("dateInput").value; org.value=$("valueInput").value; saveOrg();
-  if(id==="namesInput") updateCount();
-}));
+$("namesInput").addEventListener("input",()=>{ org.text=$("namesInput").value; saveOrg(); updateCount(); });
 
 function tryDraw(){
   const list=parseNames($("namesInput").value);
@@ -276,9 +275,8 @@ function tryDraw(){
 }
 function doDraw(list){
   const p=derange(list.length);
-  const d=$("dateInput").value, v=clean($("valueInput").value);
   org.names=list;
-  org.links=list.map((g,i)=>pack({g, r:list[p[i]], ...(d?{d}:{}), ...(v?{v}:{})}));
+  org.links=list.map((g,i)=>pack({g, r:list[p[i]]}));
   org.sent=[]; saveOrg();
   renderOrg(); confetti(60); toast("Sorteio feito! 🎉");
 }
@@ -290,11 +288,7 @@ function confirmNewDraw(){
 function pageUrl(){ return location.origin + location.pathname; }
 function linkFor(i){ return pageUrl()+"#r="+org.links[i]; }
 function msgFor(i){
-  let extra="";
-  if(org.date) extra+=`📅 Troca de presentes: ${fmtDate(org.date)}\n`;
-  if(org.value) extra+=`💰 Valor: ${clean(org.value)}\n`;
-  if(extra) extra+="\n";
-  return `🎁 *Amigo Secreto*\n\nOi, ${org.names[i]}! Toque no link para descobrir quem você tirou:\n\n${linkFor(i)}\n\n${extra}Esse link é só seu, não mostre pra ninguém! 🤫`;
+  return `🎁 *Amigo Secreto*\n\nOi, ${org.names[i]}! Toque no link para descobrir quem você tirou:\n\n${linkFor(i)}\n\nEsse link é só seu, não mostre pra ninguém! 🤫`;
 }
 async function copyText(t){
   try{ await navigator.clipboard.writeText(t); }
@@ -307,7 +301,7 @@ function renderOrg(){
   $("fileWarn").style.display = location.protocol==="file:" ? "" : "none";
   if(!org.links){
     $("orgSetup").style.display=""; $("orgSend").style.display="none";
-    $("namesInput").value=org.text||""; $("dateInput").value=org.date||""; $("valueInput").value=org.value||"";
+    $("namesInput").value=org.text||"";
     updateCount(); return;
   }
   $("orgSetup").style.display="none"; $("orgSend").style.display="";
@@ -336,9 +330,6 @@ function leaveOrg(){ history.replaceState(null,"",location.pathname+location.sea
 /* ========= revelação ========= */
 function showResult(o){
   $("rWho").textContent=o.g; $("rFriend").textContent=o.r;
-  const det=$("rDetails"); det.innerHTML="";
-  if(o.d){ const s=document.createElement("span"); s.className="pill"; s.textContent="📅 "+fmtDate(o.d); det.appendChild(s); }
-  if(o.v){ const s=document.createElement("span"); s.className="pill"; s.textContent="💰 "+o.v; det.appendChild(s); }
   $("gift").classList.remove("open"); $("gift").style.display="";
   $("rRes").classList.remove("show"); $("tapTxt").style.display="";
   go("result");
@@ -367,6 +358,51 @@ function route(){
   go("home");
 }
 window.addEventListener("hashchange", route);
+
+/* ========= música de fundo: Jingle Bells (1857, domínio público), sintetizada ========= */
+const NOTE={C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,C3:130.81,F3:174.61,G3:196.00};
+const MELODY=[
+  ["E5",1],["E5",1],["E5",2], ["E5",1],["E5",1],["E5",2], ["E5",1],["G5",1],["C5",1.5],["D5",.5], ["E5",4],
+  ["F5",1],["F5",1],["F5",1.5],["F5",.5], ["F5",1],["E5",1],["E5",1],["E5",.5],["E5",.5], ["E5",1],["D5",1],["D5",1],["E5",1], ["D5",2],["G5",2],
+  ["E5",1],["E5",1],["E5",2], ["E5",1],["E5",1],["E5",2], ["E5",1],["G5",1],["C5",1.5],["D5",.5], ["E5",4],
+  ["F5",1],["F5",1],["F5",1.5],["F5",.5], ["F5",1],["E5",1],["E5",1],["E5",.5],["E5",.5], ["G5",1],["G5",1],["F5",1],["D5",1], ["C5",4]
+];
+const BASS=["C3","C3","C3","C3","F3","C3","G3","G3","C3","C3","C3","C3","F3","C3","G3","C3"]; // um por compasso (4 tempos)
+const BEAT=0.4;
+let actx=null, master=null, playing=false, timer=null, mi=0, bi=0, nextMel=0, nextBass=0;
+let musicMuted=false; try{ musicMuted = localStorage.getItem("as_mute")==="1"; }catch(e){}
+
+function bell(freq, t, dur, vol){
+  [[1,"sine",vol],[2,"sine",vol*0.25],[3.01,"triangle",vol*0.06]].forEach(([mult,type,v])=>{
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type=type; o.frequency.value=freq*mult;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(v,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g).connect(master); o.start(t); o.stop(t+dur+0.05);
+  });
+}
+function schedule(){
+  const ahead=actx.currentTime+0.4;
+  while(nextMel<ahead){ const [n,b]=MELODY[mi]; bell(NOTE[n], nextMel, Math.max(0.5,b*BEAT*1.6), 0.5); nextMel+=b*BEAT; mi=(mi+1)%MELODY.length; }
+  while(nextBass<ahead){ bell(NOTE[BASS[bi]], nextBass, 4*BEAT, 0.35); nextBass+=4*BEAT; bi=(bi+1)%BASS.length; }
+}
+function startMusic(){
+  try{
+    if(!actx){ actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=0.12; master.connect(actx.destination); }
+    actx.resume();
+    if(!playing){ playing=true; mi=0; bi=0; nextMel=nextBass=actx.currentTime+0.1; timer=setInterval(schedule,100); }
+  }catch(e){}
+  updateMusicBtn();
+}
+function stopMusic(){ playing=false; clearInterval(timer); if(actx) actx.suspend(); updateMusicBtn(); }
+function updateMusicBtn(){ const b=$("musicBtn"); b.textContent=playing?"🔊":"🔇"; b.classList.toggle("on",playing); }
+function toggleMusic(){
+  if(playing){ stopMusic(); musicMuted=true; } else { musicMuted=false; startMusic(); }
+  try{ localStorage.setItem("as_mute", musicMuted?"1":"0"); }catch(e){}
+}
+// o navegador só deixa tocar som depois de um toque na página
+document.addEventListener("pointerdown", function first(){ if(!musicMuted && !playing) startMusic(); document.removeEventListener("pointerdown", first); });
+// pausa quando a pessoa sai do app/aba
+document.addEventListener("visibilitychange", ()=>{ if(!actx || !playing) return; document.hidden ? actx.suspend() : actx.resume(); });
 
 /* ========= enfeites ========= */
 function confetti(n){
