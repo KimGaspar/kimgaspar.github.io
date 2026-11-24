@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Organizador · Amigo Secreto</title>
+<title>Amigo Secreto 🎁</title>
 <style>
   :root{
     --bg1:#0f2a22; --bg2:#1b4a3b;
@@ -151,23 +151,38 @@
   <header>
     <span class="emoji">🎁</span>
     <h1 class="serif">Amigo <span>Secreto</span></h1>
-    <p id="countTxt"></p><p style="margin-top:8px;font-size:12.5px;letter-spacing:1px;color:var(--gold)">PAINEL DO ORGANIZADOR · NÃO COMPARTILHE</p>
+    <p id="countTxt"></p>
   </header>
 
   <!-- HOME -->
   <section class="screen active" id="home">
+    <div class="card">
+      <h2 class="serif">Quem é você?</h2>
+      <p class="sub">Recebeu um <b>link</b> no privado? É só tocar nele que o seu presente abre aqui. Se preferir, toque no seu nome e digite o código que veio na mensagem. 🔒</p>
+      <div class="names" id="pNames"></div>
+      <label class="lbl" for="codeInput">Seu código</label>
+      <input class="code" id="codeInput" placeholder="XXXX-XXXX" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <div class="err" id="pErr"></div>
+      <button class="btn btn-red" onclick="tryReveal()" style="margin-top:8px">🎁 Revelar meu amigo secreto</button>
+    </div>
+  </section>
+
+  <!-- ORGANIZADOR (abre com #organizar) -->
+  <section class="screen" id="organizer">
     <div class="card" id="orgIntro">
       <h2 class="serif">Painel do organizador</h2>
-      <p class="sub">Este arquivo é <b>só seu</b>. Ele faz o sorteio e gera um código secreto para cada pessoa. Você não vê quem tirou quem: os pares ficam escondidos dentro dos códigos. Ninguém tira a si mesmo.</p>
+      <p class="sub">Aqui você faz o sorteio e envia um link pessoal para cada pessoa. Você não vê quem tirou quem: os pares ficam escondidos dentro dos links. Ninguém tira a si mesmo.</p>
+      <div class="note" id="fileWarn" style="display:none">⚠️ Você abriu o arquivo direto do computador. Os links só funcionam se o painel for aberto pelo endereço do GitHub, com <b>#organizar</b> no final.</div>
       <button class="btn btn-gold" onclick="doDraw()">✨ Fazer o sorteio</button>
     </div>
     <div class="card" id="orgList" style="display:none">
-      <h2 class="serif">Envie os códigos</h2>
-      <div class="note">📲 Antes, mande o arquivo <b>amigo-secreto.html</b> no grupo. Depois toque em <b>Enviar</b> em cada nome: o WhatsApp abre com a mensagem pronta, e você escolhe a conversa <b>privada</b> daquela pessoa.</div>
+      <h2 class="serif">Envie os links</h2>
+      <div class="note">📲 Toque em <b>Enviar</b> em cada nome. O WhatsApp abre com a mensagem pronta: escolha a conversa <b>privada</b> daquela pessoa.</div>
       <p class="sub center" id="progress" style="margin-bottom:4px"></p>
       <div id="codeRows"></div>
       <button class="btn btn-ghost" style="margin-top:16px" onclick="confirmRedo()">↻ Refazer sorteio</button>
     </div>
+    <button class="back" style="display:block;margin:6px auto 0" onclick="leaveOrg()">Sair do painel</button>
   </section>
 
   <!-- RESULTADO -->
@@ -264,36 +279,62 @@ function modal({emoji="🤔",title,text,ok="Sim",onOk}){
 }
 function closeModal(){ $("modal").classList.remove("show"); }
 
+/* ====== participante ====== */
+let pSel = null;
+function renderPNames(){
+  const box=$("pNames"); box.innerHTML="";
+  NAMES.forEach((n,i)=>{
+    const b=document.createElement("button"); b.className="chip"+(pSel===i?" sel":""); b.textContent=n;
+    b.onclick=()=>{ pSel=i; $("pErr").textContent=""; renderPNames(); $("codeInput").focus(); };
+    box.appendChild(b);
+  });
+}
+$("codeInput").addEventListener("input",e=>{
+  let v=e.target.value.toUpperCase().replace(/[^0-9A-Z]/g,"").slice(0,8);
+  if(v.length>4) v=v.slice(0,4)+"-"+v.slice(4);
+  e.target.value=v; $("pErr").textContent="";
+});
+$("codeInput").addEventListener("keydown",e=>{ if(e.key==="Enter") tryReveal(); });
+function tryReveal(){
+  if(pSel===null){ $("pErr").textContent="Toque no seu nome primeiro 👆"; return; }
+  const r = decodeCode(pSel, $("codeInput").value);
+  if(r===null){ $("pErr").textContent="Esse código não confere com o nome escolhido."; return; }
+  showResult(pSel, r, ()=>{ pSel=null; $("codeInput").value=""; renderPNames(); go("home"); });
+}
+
 /* ====== organizador ====== */
 let codes=null, sent=new Set();
-try{ const s=JSON.parse(localStorage.getItem("as_org")||"null"); if(s && s.codes && s.codes.length===NAMES.length){ codes=s.codes; sent=new Set(s.sent||[]); } }catch(e){}
-function save(){ try{ localStorage.setItem("as_org", JSON.stringify({codes, sent:[...sent]})); }catch(e){} }
+try{ const st=JSON.parse(localStorage.getItem("as_org")||"null"); if(st && st.codes && st.codes.length===NAMES.length){ codes=st.codes; sent=new Set(st.sent||[]); } }catch(e){}
+function saveOrg(){ try{ localStorage.setItem("as_org", JSON.stringify({codes, sent:[...sent]})); }catch(e){} }
 function doDraw(){
   const p = derange(NAMES.length);
-  codes = p.map((r,i)=>makeCode(i,r)); sent=new Set(); save();
+  codes = p.map((r,i)=>makeCode(i,r)); sent=new Set(); saveOrg();
   renderOrg(); confetti(60); toast("Sorteio feito! 🎉");
 }
 function confirmRedo(){
-  modal({emoji:"⚠️",title:"Refazer o sorteio?",text:"Todos os códigos atuais deixam de valer. Quem já recebeu vai precisar de um código novo.",ok:"Refazer",onOk:doDraw});
+  modal({emoji:"⚠️",title:"Refazer o sorteio?",text:"Todos os links já enviados deixam de valer. Você vai ter que mandar tudo de novo.",ok:"Refazer",onOk:doDraw});
 }
+function pageUrl(){ return location.origin + location.pathname; }
+function linkFor(i){ return pageUrl()+"#"+i+"-"+codes[i].replace("-",""); }
 function msgFor(i){
-  return `🎁 *Amigo Secreto*\n\nOi, ${NAMES[i]}! Seu código secreto é:\n\n*${codes[i]}*\n\nAbra o arquivo *amigo-secreto.html* que está no grupo, toque no seu nome e digite o código. Não mostre pra ninguém! 🤫`;
+  return `🎁 *Amigo Secreto*\n\nOi, ${NAMES[i]}! Toque no link para descobrir quem você tirou:\n\n${linkFor(i)}\n\nSe pedir, seu código é *${codes[i]}*.\nEsse link é só seu, não mostre pra ninguém! 🤫`;
 }
 async function copyText(t){
   try{ await navigator.clipboard.writeText(t); }
   catch(e){ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");}catch(_){} ta.remove(); }
   toast("Mensagem copiada ✅");
 }
-function markSent(i){ sent.add(i); save(); renderOrg(); }
+function markSent(i){ sent.add(i); saveOrg(); renderOrg(); }
 function renderOrg(){
+  $("fileWarn").style.display = location.protocol==="file:" ? "" : "none";
   if(!codes){ $("orgIntro").style.display=""; $("orgList").style.display="none"; return; }
   $("orgIntro").style.display="none"; $("orgList").style.display="";
-  $("progress").textContent = sent.size===NAMES.length ? "🎄 Todos os códigos foram enviados!" : `${sent.size} de ${NAMES.length} enviados`;
+  $("progress").textContent = sent.size===NAMES.length ? "🎄 Todos os links foram enviados!" : `${sent.size} de ${NAMES.length} enviados`;
   const box=$("codeRows"); box.innerHTML="";
   NAMES.forEach((n,i)=>{
     const row=document.createElement("div"); row.className="row";
     const nm=document.createElement("div"); nm.className="nm"; nm.textContent=n;
-    const st=document.createElement("span"); st.className="cd"; st.textContent = sent.has(i) ? "✓ enviado" : "código pronto 🔒"; 
+    const st=document.createElement("span"); st.className="cd"; st.textContent = sent.has(i) ? "✓ enviado" : "link pronto 🔒";
     if(sent.has(i)) st.style.color="var(--green)";
     nm.appendChild(st);
     const acts=document.createElement("div"); acts.className="acts";
@@ -306,6 +347,16 @@ function renderOrg(){
     acts.append(cp,wa); row.append(nm,acts); box.appendChild(row);
   });
 }
+function leaveOrg(){ history.replaceState(null,"",location.pathname+location.search); $("countTxt").textContent=`${NAMES.length} participantes · Natal 2026`; go("home"); }
+
+/* ====== rotas ====== */
+function route(){
+  if(location.hash==="#organizar"){
+    $("countTxt").textContent="Painel do organizador · não compartilhe este link";
+    renderOrg(); go("organizer");
+  } else if(location.hash.length>1){ openFromLink(); }
+}
+window.addEventListener("hashchange", route);
 
 /* ====== resultado ====== */
 let afterHide=null;
@@ -348,8 +399,17 @@ function confetti(n){
   }
 })();
 
+function openFromLink(){
+  const m = location.hash.match(/^#(\d+)-([0-9A-Za-z]{8})$/);
+  if(!m) return;
+  const i = +m[1];
+  const r = i < NAMES.length ? decodeCode(i, m[2]) : null;
+  if(r===null){ toast("Link inválido. Digite seu código abaixo."); return; }
+  showResult(i, r, ()=>{ history.replaceState(null,"",location.pathname+location.search); go("home"); });
+}
 $("countTxt").textContent = `${NAMES.length} participantes · Natal 2026`;
-renderOrg();
+renderPNames();
+route();
 </script>
 </body>
 </html>
