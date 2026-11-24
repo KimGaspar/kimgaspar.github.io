@@ -2,13 +2,427 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Organizador · Amigo Secreto</title>
-<meta http-equiv="refresh" content="0; url=../#organizar">
-<script>location.replace("../#organizar");</script>
-<style>body{font-family:system-ui,sans-serif;background:#0f2a22;color:#fff8ec;display:grid;place-items:center;min-height:100vh;margin:0}a{color:#e8bd62}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Amigo Secreto 🎁</title>
+<style>
+  :root{
+    --bg1:#0f2a22;
+    --red:#c8323c; --red2:#9f222b;
+    --gold:#e8bd62; --gold2:#c9973a;
+    --cream:#fff8ec; --card:#fffdf8;
+    --ink:#2b1c14; --muted:#7d6c5e; --line:#efe3d0;
+    --green:#2f7d5b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{min-height:100%}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);
+    background:radial-gradient(1100px 650px at 50% -15%, #2a6a55 0%, var(--bg1) 55%, #08190f 100%) fixed;
+    min-height:100vh;overflow-x:hidden;
+  }
+  .serif{font-family:Georgia,"Times New Roman",serif}
+
+  .snow{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .flake{position:absolute;top:-10px;background:#fff;border-radius:50%;opacity:.7;animation:fall linear infinite}
+  @keyframes fall{to{transform:translate3d(var(--dx),110vh,0)}}
+
+  .wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:28px 18px 60px}
+  header{text-align:center;color:var(--cream);margin:10px 0 26px}
+  header .emoji{font-size:46px;display:block;margin-bottom:6px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
+  header h1{font-size:38px;letter-spacing:.5px;font-weight:700}
+  header h1 span{color:var(--gold)}
+  header p{opacity:.75;margin-top:6px;font-size:15px}
+
+  .card{background:var(--card);border-radius:22px;padding:22px;box-shadow:0 18px 45px rgba(0,0,0,.35);margin-bottom:16px}
+  .card h2{font-size:22px;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:14.5px;line-height:1.45;margin-bottom:16px}
+
+  .screen{display:none;animation:fadeUp .35s ease}
+  .screen.active{display:block}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:0;border-radius:16px;
+    padding:16px 18px;font-size:16.5px;font-weight:650;cursor:pointer;transition:transform .12s;font-family:inherit;text-decoration:none}
+  .btn:active{transform:scale(.97)}
+  .btn-red{background:linear-gradient(180deg,var(--red),var(--red2));color:#fff;box-shadow:0 8px 20px rgba(159,34,43,.35)}
+  .btn-gold{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#3a2608;box-shadow:0 8px 20px rgba(201,151,58,.35)}
+  .btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--line)}
+  .btn-sm{padding:9px 12px;font-size:13.5px;border-radius:11px;width:auto}
+  .btn-wa{background:#25d366;color:#fff}
+  .btn-cp{background:#f4ece0;color:var(--ink)}
+  .stack>*+*{margin-top:12px}
+
+  label.lbl{display:block;font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:16px 0 8px}
+  textarea{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font-size:15.5px;
+    outline:none;background:#fff;color:var(--ink);font-family:inherit}
+  textarea{min-height:230px;resize:vertical;line-height:1.55}
+  textarea:focus{border-color:var(--gold)}
+  .count{font-size:13.5px;color:var(--muted);margin-top:8px}
+  .count b{color:var(--ink)}
+  .err{color:var(--red);font-size:14px;margin:10px 0 2px;min-height:18px;font-weight:600;text-align:center}
+
+  .row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .row .nm{font-weight:650;font-size:14.5px;flex:1;min-width:0;word-break:break-word}
+  .row .st{display:block;font-size:12.5px;color:var(--muted);font-weight:500;margin-top:2px}
+  .row .acts{display:flex;gap:6px;flex-shrink:0}
+  .note{background:#fbf3e3;border-radius:14px;padding:12px 14px;font-size:13.5px;color:#6b5434;line-height:1.45;margin-bottom:14px}
+  .progress{height:8px;background:#f1e7d6;border-radius:99px;overflow:hidden;margin:6px 0 4px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--green),#4fb085);border-radius:99px;transition:width .4s}
+
+  .reveal{text-align:center;padding:30px 20px 26px}
+  .reveal .hi{color:var(--muted);font-size:15px}
+  .reveal .who{font-size:26px;margin:4px 0 22px;word-break:break-word}
+  .gift{position:relative;width:170px;height:170px;margin:10px auto 26px;cursor:pointer}
+  .gift .box{position:absolute;bottom:0;left:10px;width:150px;height:115px;border-radius:12px;
+    background:linear-gradient(135deg,var(--red),var(--red2));box-shadow:0 14px 30px rgba(159,34,43,.35);transition:all .6s ease}
+  .gift .box::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:24px;transform:translateX(-50%);background:var(--gold)}
+  .gift .lid{position:absolute;top:28px;left:0;width:170px;height:38px;border-radius:10px;
+    background:linear-gradient(135deg,#d73d47,var(--red));box-shadow:0 6px 14px rgba(0,0,0,.18);transition:all .7s cubic-bezier(.5,-0.4,.4,1.4)}
+  .gift .lid::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:26px;transform:translateX(-50%);background:var(--gold2)}
+  .gift .bow{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:40px;line-height:1}
+  .gift:not(.open){animation:wiggle 2.2s ease-in-out infinite}
+  @keyframes wiggle{0%,80%,100%{transform:rotate(0)}85%{transform:rotate(-4deg)}90%{transform:rotate(4deg)}95%{transform:rotate(-2deg)}}
+  .gift.open .lid{transform:translate(40px,-90px) rotate(28deg);opacity:0}
+  .gift.open .box{transform:scale(.6) translateY(60px);opacity:0}
+  .tap{color:var(--muted);font-size:14px;margin-bottom:14px}
+  .result{display:none}
+  .result.show{display:block;animation:pop .6s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+  .result .label{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);font-weight:800}
+  .result .friend{font-size:40px;font-weight:700;color:var(--red);margin:8px 0 6px;line-height:1.1;word-break:break-word}
+  .result .shh{color:var(--muted);font-size:14px;margin-bottom:22px}
+
+  .modal{position:fixed;inset:0;background:rgba(5,15,10,.6);backdrop-filter:blur(4px);z-index:20;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.show{display:flex}
+  .modal .card{max-width:380px;width:100%;text-align:center;animation:pop .35s ease}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#1d1410;color:#fff;
+    padding:12px 18px;border-radius:12px;font-size:14px;opacity:0;transition:all .25s;z-index:30;pointer-events:none;text-align:center;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+  .linkbtn{background:none;border:0;color:var(--cream);opacity:.75;font-size:14.5px;cursor:pointer;font-family:inherit;display:block;margin:8px auto 0;padding:6px}
+  .confetti{position:fixed;top:-12px;width:9px;height:14px;z-index:15;pointer-events:none;animation:conf linear forwards}
+  @keyframes conf{to{transform:translate3d(var(--dx),105vh,0) rotate(var(--r))}}
+  .center{text-align:center}
+  .big-emoji{font-size:54px;text-align:center;margin:4px 0 10px}
+  .music{position:fixed;top:14px;right:14px;z-index:12;width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;
+    background:rgba(255,248,236,.14);color:#fff;font-size:21px;backdrop-filter:blur(6px);box-shadow:0 6px 16px rgba(0,0,0,.25);transition:transform .15s}
+  .music:active{transform:scale(.9)}
+  .music.on{animation:beat 1s ease-in-out infinite}
+  @keyframes beat{50%{transform:scale(1.08)}}
+  footer{text-align:center;color:rgba(255,248,236,.45);font-size:12.5px;margin-top:26px}
+</style>
 </head>
 <body>
-<p>Abrindo o painel… <a href="../#organizar">toque aqui</a> se não abrir.</p>
+<div class="snow" id="snow"></div>
+<button class="music" id="musicBtn" aria-label="Ligar ou desligar a música" onclick="event.stopPropagation(); toggleMusic()">🔇</button>
+
+<div class="wrap">
+  <header>
+    <span class="emoji">🎁</span>
+    <h1 class="serif">Amigo <span>Secreto</span></h1>
+    <p id="headSub">Natal 2026</p>
+  </header>
+
+  <!-- FAMÍLIA (sem link) -->
+  <section class="screen active" id="home">
+    <div class="card center">
+      <div class="big-emoji">💌</div>
+      <h2 class="serif">Seu amigo secreto chega por link</h2>
+      <p class="sub" style="margin:8px 0 0">Quem está organizando vai te mandar um <b>link pessoal</b> no privado do WhatsApp. É só tocar nele que o seu presente abre aqui.</p>
+    </div>
+    <div class="card" style="padding:16px 18px">
+      <p class="sub" style="margin:0">🤫 Cada link mostra o resultado só de uma pessoa. Não encaminhe o seu e não mande print no grupo!</p>
+    </div>
+  </section>
+
+  <!-- ORGANIZADOR: configuração -->
+  <section class="screen" id="organizer">
+    <div id="orgSetup">
+      <div class="card">
+        <h2 class="serif">Participantes</h2>
+        <p class="sub">Escreva um nome por linha (ou cole uma lista). Ninguém vai tirar a si mesmo.</p>
+        <textarea id="namesInput" placeholder="Adriana&#10;Bosco&#10;Diego&#10;..." spellcheck="false"></textarea>
+        <div class="count" id="namesCount"></div>
+        <div class="err" id="orgErr"></div>
+        <div class="note" id="fileWarn" style="display:none;margin-top:8px">⚠️ Você abriu o arquivo direto do computador. Os links só funcionam se este painel for aberto pelo endereço do site (GitHub).</div>
+        <button class="btn btn-gold" style="margin-top:6px" onclick="tryDraw()">✨ Fazer o sorteio</button>
+      </div>
+    </div>
+
+    <!-- ORGANIZADOR: envio -->
+    <div id="orgSend" style="display:none">
+      <div class="card">
+        <h2 class="serif">Envie os links</h2>
+        <div class="note">📲 Toque em <b>Enviar</b> em cada nome. O WhatsApp abre com a mensagem pronta: escolha a conversa <b>privada</b> daquela pessoa. Os resultados ficam escondidos dentro dos links.</div>
+        <div class="count" id="progressTxt"></div>
+        <div class="progress"><i id="progressBar"></i></div>
+        <div id="codeRows" style="margin-top:6px"></div>
+        <button class="btn btn-ghost" style="margin-top:16px" onclick="confirmNewDraw()">↻ Novo sorteio</button>
+      </div>
+    </div>
+    <button class="linkbtn" onclick="leaveOrg()">Sair do painel</button>
+  </section>
+
+  <!-- RESULTADO -->
+  <section class="screen" id="result">
+    <div class="card reveal">
+      <div class="hi">Olá,</div>
+      <div class="who serif" id="rWho"></div>
+      <div class="gift" id="gift" onclick="openGift()">
+        <div class="box"></div>
+        <div class="lid"><div class="bow">🎀</div></div>
+      </div>
+      <div class="tap" id="tapTxt">Toque no presente para abrir</div>
+      <div class="result" id="rRes">
+        <div class="label">Seu amigo secreto é</div>
+        <div class="friend serif" id="rFriend"></div>
+        <div class="shh">🤫 Guarde segredo!</div>
+      </div>
+      <button class="btn btn-red" onclick="hideResult()">Esconder</button>
+    </div>
+  </section>
+
+  <footer>Feliz Natal 🎄</footer>
+</div>
+
+<div class="modal" id="modal">
+  <div class="card">
+    <div style="font-size:40px;margin-bottom:6px" id="mEmoji">🤔</div>
+    <h2 class="serif" id="mTitle"></h2>
+    <p class="sub" id="mText" style="margin-top:6px"></p>
+    <div class="stack">
+      <button class="btn btn-red" id="mOk">Sim</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========= utilitários ========= */
+const $ = id => document.getElementById(id);
+const clean = s => s.replace(/\s+/g," ").trim();
+const norm = s => clean(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase();
+function fnv(str){ let h=0x811c9dc5; for(const ch of str){ h^=ch.codePointAt(0); h=Math.imul(h,0x01000193)>>>0; } return h>>>0; }
+function randBytes(n){ const a=new Uint8Array(n); crypto.getRandomValues(a); return a; }
+function randInt(n){ const a=new Uint32Array(1); crypto.getRandomValues(a); return a[0]%n; }
+
+// sorteio sem ninguém tirar a si mesmo (desarranjo)
+function derange(n){
+  let p;
+  do{ p=[...Array(n).keys()]; for(let i=n-1;i>0;i--){ const j=randInt(i+1); [p[i],p[j]]=[p[j],p[i]]; } }
+  while(p.some((v,i)=>v===i));
+  return p;
+}
+
+/* ========= link pessoal: resultado embaralhado dentro do link ========= */
+const enc=new TextEncoder(), dec=new TextDecoder();
+function b64url(bytes){ let s=""; bytes.forEach(b=>s+=String.fromCharCode(b)); return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+function unb64url(str){ str=str.replace(/-/g,"+").replace(/_/g,"/"); while(str.length%4) str+="="; const s=atob(str); return Uint8Array.from(s,c=>c.charCodeAt(0)); }
+function mask(bytes,key){ return bytes.map((b,i)=>b ^ key[i%key.length] ^ ((i*31+7)&255)); }
+function pack(obj){
+  const json=JSON.stringify(obj), h=fnv(json), key=randBytes(6);
+  const body=mask(enc.encode(json), key);
+  const out=new Uint8Array(8+body.length);
+  out.set(key,0); out[6]=h&255; out[7]=(h>>>8)&255; out.set(body,8);
+  return b64url(out);
+}
+function unpack(str){
+  try{
+    const b=unb64url(str); if(b.length<10) return null;
+    const key=b.slice(0,6), json=dec.decode(mask(b.slice(8),key)), h=fnv(json);
+    if(b[6]!==(h&255) || b[7]!==((h>>>8)&255)) return null;
+    const o=JSON.parse(json);
+    return (o && typeof o.g==="string" && typeof o.r==="string") ? o : null;
+  }catch(e){ return null; }
+}
+
+/* ========= interface ========= */
+function go(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); window.scrollTo({top:0,behavior:"smooth"}); }
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2400); }
+function modal({emoji="🤔",title,text,ok="Sim",onOk}){
+  $("mEmoji").textContent=emoji; $("mTitle").textContent=title; $("mText").textContent=text;
+  $("mOk").textContent=ok; $("mOk").onclick=()=>{ closeModal(); onOk(); };
+  $("modal").classList.add("show");
+}
+function closeModal(){ $("modal").classList.remove("show"); }
+
+/* ========= organizador ========= */
+let org = { text:"", names:null, links:null, sent:[] };
+try{ Object.assign(org, JSON.parse(localStorage.getItem("as_org2")||"{}")); }catch(e){}
+function saveOrg(){ try{ localStorage.setItem("as_org2", JSON.stringify(org)); }catch(e){} }
+
+function parseNames(text){ return text.split(/[\n,;]+/).map(clean).filter(Boolean); }
+function updateCount(){
+  const list=parseNames($("namesInput").value);
+  $("namesCount").innerHTML = list.length ? `<b>${list.length}</b> participante${list.length>1?"s":""}` : "Nenhum nome ainda";
+  $("orgErr").textContent="";
+}
+$("namesInput").addEventListener("input",()=>{ org.text=$("namesInput").value; saveOrg(); updateCount(); });
+
+function tryDraw(){
+  const list=parseNames($("namesInput").value);
+  if(list.length<3){ $("orgErr").textContent="Coloque pelo menos 3 participantes."; return; }
+  const seen=new Map(), dups=[];
+  list.forEach(n=>{ const k=norm(n); if(seen.has(k)) dups.push(n); else seen.set(k,n); });
+  if(dups.length){ $("orgErr").textContent=`Nome repetido: ${dups.join(", ")}. Diferencie (ex.: "Ana Paula" e "Ana Lúcia").`; return; }
+  modal({emoji:"🎲",title:`Sortear entre ${list.length} pessoas?`,text:"Confira se ninguém ficou de fora. Depois de enviar os links, não dá pra trocar os nomes.",ok:"Sortear",onOk:()=>doDraw(list)});
+}
+function doDraw(list){
+  const p=derange(list.length);
+  org.names=list;
+  org.links=list.map((g,i)=>pack({g, r:list[p[i]]}));
+  org.sent=[]; saveOrg();
+  renderOrg(); confetti(60); toast("Sorteio feito! 🎉");
+}
+function confirmNewDraw(){
+  modal({emoji:"⚠️",title:"Fazer um novo sorteio?",
+    text:"Os links que você já mandou continuam abrindo o sorteio antigo. Avise no grupo para todo mundo ignorar os links anteriores.",
+    ok:"Novo sorteio",onOk:()=>{ org.links=null; org.names=null; org.sent=[]; saveOrg(); renderOrg(); }});
+}
+function pageUrl(){ return location.origin + location.pathname; }
+function linkFor(i){ return pageUrl()+"#r="+org.links[i]; }
+function msgFor(i){
+  return `🎁 *Amigo Secreto*\n\nOi, ${org.names[i]}! Toque no link para descobrir quem você tirou:\n\n${linkFor(i)}\n\nEsse link é só seu, não mostre pra ninguém! 🤫`;
+}
+async function copyText(t){
+  try{ await navigator.clipboard.writeText(t); }
+  catch(e){ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");}catch(_){} ta.remove(); }
+  toast("Mensagem copiada ✅");
+}
+function markSent(i){ if(!org.sent.includes(i)){ org.sent.push(i); saveOrg(); } renderOrg(); }
+
+function renderOrg(){
+  $("fileWarn").style.display = location.protocol==="file:" ? "" : "none";
+  if(!org.links){
+    $("orgSetup").style.display=""; $("orgSend").style.display="none";
+    $("namesInput").value=org.text||"";
+    updateCount(); return;
+  }
+  $("orgSetup").style.display="none"; $("orgSend").style.display="";
+  const total=org.names.length, done=org.sent.length;
+  $("progressTxt").innerHTML = done===total ? "🎄 <b>Todos os links foram enviados!</b>" : `<b>${done}</b> de ${total} enviados`;
+  $("progressBar").style.width=(done/total*100)+"%";
+  const box=$("codeRows"); box.innerHTML="";
+  org.names.forEach((n,i)=>{
+    const sent=org.sent.includes(i);
+    const row=document.createElement("div"); row.className="row";
+    const nm=document.createElement("div"); nm.className="nm"; nm.textContent=n;
+    const st=document.createElement("span"); st.className="st"; st.textContent= sent ? "✓ enviado" : "link pronto 🔒";
+    if(sent) st.style.color="var(--green)";
+    nm.appendChild(st);
+    const acts=document.createElement("div"); acts.className="acts";
+    const cp=document.createElement("button"); cp.className="btn btn-sm btn-cp"; cp.textContent="Copiar";
+    cp.onclick=()=>{ copyText(msgFor(i)); markSent(i); };
+    const wa=document.createElement("a"); wa.className="btn btn-sm btn-wa"; wa.textContent= sent ? "Reenviar" : "Enviar";
+    wa.target="_blank"; wa.rel="noopener"; wa.href="https://wa.me/?text="+encodeURIComponent(msgFor(i));
+    wa.onclick=()=>setTimeout(()=>markSent(i),300);
+    acts.append(cp,wa); row.append(nm,acts); box.appendChild(row);
+  });
+}
+function leaveOrg(){ history.replaceState(null,"",location.pathname+location.search); route(); }
+
+/* ========= revelação ========= */
+function showResult(o){
+  $("rWho").textContent=o.g; $("rFriend").textContent=o.r;
+  $("gift").classList.remove("open"); $("gift").style.display="";
+  $("rRes").classList.remove("show"); $("tapTxt").style.display="";
+  go("result");
+}
+function openGift(){
+  const g=$("gift"); if(g.classList.contains("open")) return;
+  g.classList.add("open"); $("tapTxt").style.display="none";
+  setTimeout(()=>{ g.style.display="none"; $("rRes").classList.add("show"); confetti(90); },550);
+}
+function hideResult(){
+  $("rFriend").textContent="";
+  history.replaceState(null,"",location.pathname+location.search);
+  route(); toast("Para ver de novo, toque no seu link outra vez.");
+}
+
+/* ========= rotas ========= */
+function route(){
+  const h=location.hash;
+  if(h==="#organizar"){ $("headSub").textContent="Painel do organizador · não compartilhe"; renderOrg(); go("organizer"); return; }
+  $("headSub").textContent="Natal 2026";
+  if(h.startsWith("#r=")){
+    const o=unpack(h.slice(3));
+    if(o){ showResult(o); return; }
+    toast("Link inválido ou incompleto 😕 Peça um novo ao organizador.");
+  }
+  go("home");
+}
+window.addEventListener("hashchange", route);
+
+/* ========= música de fundo: Jingle Bells (1857, domínio público), sintetizada ========= */
+const NOTE={C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,C3:130.81,F3:174.61,G3:196.00};
+const MELODY=[
+  ["E5",1],["E5",1],["E5",2], ["E5",1],["E5",1],["E5",2], ["E5",1],["G5",1],["C5",1.5],["D5",.5], ["E5",4],
+  ["F5",1],["F5",1],["F5",1.5],["F5",.5], ["F5",1],["E5",1],["E5",1],["E5",.5],["E5",.5], ["E5",1],["D5",1],["D5",1],["E5",1], ["D5",2],["G5",2],
+  ["E5",1],["E5",1],["E5",2], ["E5",1],["E5",1],["E5",2], ["E5",1],["G5",1],["C5",1.5],["D5",.5], ["E5",4],
+  ["F5",1],["F5",1],["F5",1.5],["F5",.5], ["F5",1],["E5",1],["E5",1],["E5",.5],["E5",.5], ["G5",1],["G5",1],["F5",1],["D5",1], ["C5",4]
+];
+const BASS=["C3","C3","C3","C3","F3","C3","G3","G3","C3","C3","C3","C3","F3","C3","G3","C3"]; // um por compasso (4 tempos)
+const BEAT=0.4;
+let actx=null, master=null, playing=false, timer=null, mi=0, bi=0, nextMel=0, nextBass=0;
+let musicMuted=false; try{ musicMuted = localStorage.getItem("as_mute")==="1"; }catch(e){}
+
+function bell(freq, t, dur, vol){
+  [[1,"sine",vol],[2,"sine",vol*0.25],[3.01,"triangle",vol*0.06]].forEach(([mult,type,v])=>{
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type=type; o.frequency.value=freq*mult;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(v,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g).connect(master); o.start(t); o.stop(t+dur+0.05);
+  });
+}
+function schedule(){
+  const ahead=actx.currentTime+0.4;
+  while(nextMel<ahead){ const [n,b]=MELODY[mi]; bell(NOTE[n], nextMel, Math.max(0.5,b*BEAT*1.6), 0.5); nextMel+=b*BEAT; mi=(mi+1)%MELODY.length; }
+  while(nextBass<ahead){ bell(NOTE[BASS[bi]], nextBass, 4*BEAT, 0.35); nextBass+=4*BEAT; bi=(bi+1)%BASS.length; }
+}
+function startMusic(){
+  try{
+    if(!actx){ actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=0.12; master.connect(actx.destination); }
+    actx.resume();
+    if(!playing){ playing=true; mi=0; bi=0; nextMel=nextBass=actx.currentTime+0.1; timer=setInterval(schedule,100); }
+  }catch(e){}
+  updateMusicBtn();
+}
+function stopMusic(){ playing=false; clearInterval(timer); if(actx) actx.suspend(); updateMusicBtn(); }
+function updateMusicBtn(){ const b=$("musicBtn"); b.textContent=playing?"🔊":"🔇"; b.classList.toggle("on",playing); }
+function toggleMusic(){
+  if(playing){ stopMusic(); musicMuted=true; } else { musicMuted=false; startMusic(); }
+  try{ localStorage.setItem("as_mute", musicMuted?"1":"0"); }catch(e){}
+}
+// o navegador só deixa tocar som depois de um toque na página
+document.addEventListener("pointerdown", function first(){ if(!musicMuted && !playing) startMusic(); document.removeEventListener("pointerdown", first); });
+// pausa quando a pessoa sai do app/aba
+document.addEventListener("visibilitychange", ()=>{ if(!actx || !playing) return; document.hidden ? actx.suspend() : actx.resume(); });
+
+/* ========= enfeites ========= */
+function confetti(n){
+  const colors=["#c8323c","#e8bd62","#2f7d5b","#fff8ec","#f27b85"];
+  for(let i=0;i<n;i++){
+    const c=document.createElement("div"); c.className="confetti";
+    c.style.left=Math.random()*100+"vw"; c.style.background=colors[i%colors.length];
+    c.style.setProperty("--dx",(Math.random()*200-100)+"px"); c.style.setProperty("--r",(Math.random()*900)+"deg");
+    c.style.animationDuration=(1.8+Math.random()*1.8)+"s"; c.style.animationDelay=(Math.random()*.3)+"s";
+    if(Math.random()>.5) c.style.borderRadius="50%";
+    document.body.appendChild(c); setTimeout(()=>c.remove(),4200);
+  }
+}
+(function snow(){
+  const s=$("snow");
+  for(let i=0;i<38;i++){
+    const f=document.createElement("div"); f.className="flake"; const size=2+Math.random()*4;
+    f.style.width=f.style.height=size+"px"; f.style.left=Math.random()*100+"vw";
+    f.style.opacity=.25+Math.random()*.55; f.style.setProperty("--dx",(Math.random()*80-40)+"px");
+    f.style.animationDuration=(8+Math.random()*10)+"s"; f.style.animationDelay=(-Math.random()*18)+"s";
+    s.appendChild(f);
+  }
+})();
+
+route();
+</script>
 </body>
 </html>
